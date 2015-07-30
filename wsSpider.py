@@ -31,23 +31,22 @@ try:
 	grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=i.CODESTUDIANTE)
 	print("\n" + str(s) + "\n")
 except:
-
-		try:
-			for i in Data[1].__getitem__(0).__getitem__(0):
+		for i in Data[1].__getitem__(0).__getitem__(0):
+			try:
 				students.append(Student(i.NOMBRES, i.APELLIDOS, i.CODESTUDIANTE))
+			except:
+				print ("")
+		cont=1
+		for i in students:
 
-			cont=1
-			for i in students:
+			print ("\n" + str(cont) + str(i))
+			cont+=1
+		print ("\n")
 
-				print ("\n" + str(cont) + str(i))
-				cont+=1
-			print ("\n")
+		op=input("Ingrese el nombre a consultar: ")
+		grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=students[int(op)-1].idStudent)
 
-			op=input("Ingrese el nombre a consultar: ")
-			grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=students[int(op)-1].idStudent)
 
-		except:
-			print ("")
 
 
 grades_table = []
