@@ -31,26 +31,27 @@ try:
 	grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=i.CODESTUDIANTE)
 	print("\n" + str(s) + "\n")
 except:
-		for i in Data[1].__getitem__(0).__getitem__(0):
-			try:
-				students.append(Student(i.NOMBRES, i.APELLIDOS, i.CODESTUDIANTE))
-			except:
-				print ("")
-		cont=1
-		for i in students:
+	for i in Data[1].__getitem__(0).__getitem__(0):
+		try:
+			students.append(Student(i.NOMBRES, i.APELLIDOS, i.CODESTUDIANTE))
+		except:
+			print ("")
+	cont=1
+	for i in students:
 
-			print ("\n" + str(cont) + str(i))
-			cont+=1
-		print ("\n")
+		print ("\n" + str(cont) + str(i))
+		cont+=1
+	print ("\n")
 
-		op=input("Ingrese el nombre a consultar: ")
-		grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=students[int(op)-1].idStudent)
+	op=input("Ingrese el nombre a consultar: ")
+	grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=students[int(op)-1].idStudent)
 
 
 
 
 grades_table = []
-for cal in grades.diffgram.NewDataSet.CALIFICACIONES:
+try:
+	cal = grades[1].__getitem__(0).__getitem__(0)
 	grade = []
 	grade.append(cal.MATERIA)
 	grade.append(cal.NOTA1)
@@ -60,5 +61,16 @@ for cal in grades.diffgram.NewDataSet.CALIFICACIONES:
 	grade.append(cal.ESTADO)
 	grade.append(cal.VEZ)
 	grades_table.append(grade)
+except:
+	for cal in grades.diffgram.NewDataSet.CALIFICACIONES:
+		grade = []
+		grade.append(cal.MATERIA)
+		grade.append(cal.NOTA1)
+		grade.append(cal.NOTA2)
+		grade.append(cal.NOTA3)
+		grade.append(cal.PROMEDIO)
+		grade.append(cal.ESTADO)
+		grade.append(cal.VEZ)
+		grades_table.append(grade)
 
 print (tabulate(grades_table, headers=["MATERIA ","PARCIAL ","FINAL ","MEJORAMIENTO ","PROMEDIO ","ESTADO ","VEZ "],tablefmt="fancy_grid"))
