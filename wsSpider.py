@@ -1,4 +1,5 @@
 #! /usr/bin/python2
+# -*- encoding: utf-8 -*-
 from suds.xsd.doctor import ImportDoctor, Import
 from suds.client import Client
 from tabulate import tabulate
@@ -19,58 +20,79 @@ imp.filter.add('http://tempuri.org/')
 
 doctor = ImportDoctor(imp)
 client = Client(url, doctor=doctor)
-
+Data = None
+grades_table = []
+students = []
 name = sys.argv[1]
 lastname = sys.argv[2]
+anio = sys.argv[3]
+termino = sys.argv[4]
 
-Data = client.service.wsConsultarPersonaPorNombres(nombre = name,apellido = lastname)
-students = []
-try:
-	i = Data[1].__getitem__(0).__getitem__(0)
-	s=Student(i.NOMBRES, i.APELLIDOS, i.CODESTUDIANTE)
-	grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=i.CODESTUDIANTE)
-	print("\n" + str(s) + "\n")
-except:
-	for i in Data[1].__getitem__(0).__getitem__(0):
+name = unicode(name,"utf-8")
+lastname = unicode(lastname,"utf-8")
+anio = unicode(anio, "utf-8")
+termino = unicode(termino,"utf-8")
+
+if name.isalpha() and lastname.isalpha() and anio.isnumeric() and termino.isnumeric:
+	Data = client.service.wsConsultarPersonaPorNombres(name,lastname)
+	try:
+		i = Data[1].__getitem__(0).__getitem__(0)
+		i_name = i.NOMBRES
+		i_lastname = i.APELLIDOS
 		try:
-			students.append(Student(i.NOMBRES, i.APELLIDOS, i.CODESTUDIANTE))
+			i_code = i.CODESTUDIANTE
+			s=Student(i.NOMBRES, i.APELLIDOS, i.CODESTUDIANTE)
+			grades = client.service.wsConsultaCalificaciones(anio, termino, s.idStudent)
+			print("\n"+s.name + " " + s.lastname + " " + s.idStudent  + "\n")
 		except:
-			print ("")
-	cont=1
-	for i in students:
+			print("Esta persona no tiene matricula o.O " + i.NOMBRES + " " + i.APELLIDOS)
+	except:
+		for i in Data.diffgram.NewDataSet.DATOSPERSONA:
+			i_name = i.NOMBRES
+			i_lastname = i.APELLIDOS
+			try:
+				i_code = i.CODESTUDIANTE
+				students.append(Student(i.NOMBRES, i.APELLIDOS, i.CODESTUDIANTE))
+			except:
+				#CASOS DE PERSONAS SIN MATRICULA CRISTIAN PEÑAFIEL MANUEL SUAREZ
+				print ("\nEsta persona no tiene matricula: " + i.NOMBRES + " " + i.APELLIDOS)
+		cont=1
+		print ("\n\n\n")
+		
+		for i in students:
+			print (str(cont) + " " + i.name + " " + i.lastname + " " + i.idStudent +"\n" )
+			cont+=1
 
-		print ("\n" + str(cont) + str(i))
-		cont+=1
-	print ("\n")
-
-	op=input("Ingrese el nombre a consultar: ")
-	grades = client.service.wsConsultaCalificaciones(anio = sys.argv[3], termino =sys.argv[4], estudiante=students[int(op)-1].idStudent)
+		op=input("Ingrese el numero a consultar: ")
+		grades = client.service.wsConsultaCalificaciones(anio, termino, students[int(op)-1].idStudent)
 
 
+	#try:
+		#cal = grades[1].__getitem__(0).__getitem__(0)
+		#grade = []
+		#grade.append(cal.MATERIA)
+		#grade.append(cal.NOTA1)
+		#grade.append(cal.NOTA2)
+		#grade.append(cal.NOTA3)
+		#grade.append(cal.PROMEDIO)
+		#grade.append(cal.ESTADO)
+		#grade.append(cal.VEZ)
+		#grades_table.append(grade)
+	#except:
+	try:
+		for cal in grades.diffgram.NewDataSet.CALIFICACIONES:
+			grade = []
+			grade.append(cal.MATERIA)
+			grade.append(cal.NOTA1)
+			grade.append(cal.NOTA2)
+			grade.append(cal.NOTA3)
+			grade.append(cal.PROMEDIO)
+			grade.append(cal.ESTADO)
+			grade.append(cal.VEZ)
+			grades_table.append(grade)
+	except:
+		print ("No hay calificaciones para el termino " +anio + " " + termino + "\n")
 
-
-grades_table = []
-try:
-	cal = grades[1].__getitem__(0).__getitem__(0)
-	grade = []
-	grade.append(cal.MATERIA)
-	grade.append(cal.NOTA1)
-	grade.append(cal.NOTA2)
-	grade.append(cal.NOTA3)
-	grade.append(cal.PROMEDIO)
-	grade.append(cal.ESTADO)
-	grade.append(cal.VEZ)
-	grades_table.append(grade)
-except:
-	for cal in grades.diffgram.NewDataSet.CALIFICACIONES:
-		grade = []
-		grade.append(cal.MATERIA)
-		grade.append(cal.NOTA1)
-		grade.append(cal.NOTA2)
-		grade.append(cal.NOTA3)
-		grade.append(cal.PROMEDIO)
-		grade.append(cal.ESTADO)
-		grade.append(cal.VEZ)
-		grades_table.append(grade)
-
-print (tabulate(grades_table, headers=["MATERIA ","PARCIAL ","FINAL ","MEJORAMIENTO ","PROMEDIO ","ESTADO ","VEZ "],tablefmt="fancy_grid"))
+	print (tabulate(grades_table, headers=["MATERIA ","PARCIAL ","FINAL ","MEJORAMIENTO ","PROMEDIO ","ESTADO ","VEZ "],tablefmt="fancy_grid"))
+else:
+	print ("Entradas invalidas")
